@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Recipe - The Recipe Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+        <h1 class="text-3xl font-bold text-gray-900 text-center mb-8">Create New Recipe</h1>
+        
+        <form id="recipeForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Recipe Name</label>
+                <input type="text" id="recipeName" required class="w-full px-4 py-2 border rounded-lg">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea id="description" required class="w-full px-4 py-2 border rounded-lg" rows="3"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ingredients</label>
+                <div id="ingredientsContainer" class="space-y-2">
+                    <input type="text" name="ingredient" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., 2 cups rice">
+                </div>
+                <button type="button" id="addIngredientBtn" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
+                    + Add Another Ingredient
+                </button>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                <div id="instructionsContainer" class="space-y-2">
+                    <input type="text" name="instruction" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Preheat oven to 350°F">
+                </div>
+                <button type="button" id="addInstructionBtn" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
+                    + Add Another Step
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cooking Time (minutes)</label>
+                    <input type="number" id="cookingTime" required class="w-full px-4 py-2 border rounded-lg" min="1">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Servings</label>
+                    <input type="number" id="servings" required class="w-full px-4 py-2 border rounded-lg" min="1">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Image URL (optional)</label>
+                <input type="url" id="imageUrl" class="w-full px-4 py-2 border rounded-lg">
+            </div>
+
+            <div class="flex justify-between pt-4">
+                <button type="button" onclick="window.location.href='about.html'" 
+                    class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    Back
+                </button>
+                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    Save Recipe
+                </button>
+            </div>
+        </form>
+
+        <div id="messageBox" class="mt-6 hidden p-4 text-sm text-white rounded-lg"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('recipeForm');
+        const ingredientsContainer = document.getElementById('ingredientsContainer');
+        const instructionsContainer = document.getElementById('instructionsContainer');
+        const addIngredientBtn = document.getElementById('addIngredientBtn');
+        const addInstructionBtn = document.getElementById('addInstructionBtn');
+        const messageBox = document.getElementById('messageBox');
+
+        function showMessage(message, isError = false) {
+            messageBox.textContent = message;
+            messageBox.className = `mt-6 p-4 text-sm text-white rounded-lg ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => messageBox.classList.add('hidden'), 3000);
+        }
+
+        // Add new ingredient field
+        addIngredientBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'ingredient';
+            input.className = 'w-full px-4 py-2 border rounded-lg mt-2';
+            input.placeholder = 'e.g., 2 cups rice';
+            ingredientsContainer.appendChild(input);
+        });
+
+        // Add new instruction field
+        addInstructionBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'instruction';
+            input.className = 'w-full px-4 py-2 border rounded-lg mt-2';
+            input.placeholder = 'e.g., Mix ingredients';
+            instructionsContainer.appendChild(input);
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const ingredients = Array.from(ingredientsContainer.querySelectorAll('input[name="ingredient"]'))
+                .map(input => input.value.trim())
+                .filter(value => value);
+
+            const instructions = Array.from(instructionsContainer.querySelectorAll('input[name="instruction"]'))
+                .map(input => input.value.trim())
+                .filter(value => value);
+
+            const recipeData = {
+                name: document.getElementById('recipeName').value,
+                description: document.getElementById('description').value,
+                ingredients: ingredients,
+                instructions: instructions,
+                cookingTime: parseInt(document.getElementById('cookingTime').value),
+                servings: parseInt(document.getElementById('servings').value),
+                imageUrl: document.getElementById('imageUrl').value || ''
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/recipes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(recipeData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Recipe saved successfully!');
+                    form.reset();
+                    // Reset dynamic fields
+                    ingredientsContainer.innerHTML = '<input type="text" name="ingredient" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., 2 cups rice">';
+                    instructionsContainer.innerHTML = '<input type="text" name="instruction" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Preheat oven to 350°F">';
+                } else {
+                    throw new Error(data.message || 'Failed to save recipe');
+                }
+            } catch (error) {
+                console.error('Error saving recipe:', error);
+                showMessage('Could not save recipe. Please try again.', true);
+            }
+        });
+    </script>
+</body>
+</html>

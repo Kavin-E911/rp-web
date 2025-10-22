@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Recipes</title>
+    <!-- Tailwind CSS and Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom CSS for the full-page background and layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('recipe1.jpg'); /* Using the local file name */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Ensures the background stays in place while scrolling */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            color: #fff; /* Default text color for body */
+        }
+
+        /* Styling for the content card */
+        .content-card {
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            backdrop-filter: blur(5px); /* Adds a blur effect to the background behind the card */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Main content card container -->
+    <div class="content-card p-8 sm:p-12 rounded-xl shadow-2xl w-full max-w-4xl mx-auto transition-transform transform hover:scale-105">
+
+        <!-- Page title -->
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-gray-900 mb-6">About Recipes</h1>
+
+        <!-- Content paragraph -->
+        <p class="text-base sm:text-lg text-gray-700 leading-relaxed text-justify">
+            Recipes are more than just instructions—they are the heart of every dish, connecting us to different cultures, traditions, and personal memories. Whether you're a beginner or an experienced cook, recipes provide a reliable guide to preparing meals with consistency and creativity. They help reduce food waste, save time, and ensure balanced nutrition. In today’s fast-paced world, having access to clear, well-organized recipes empowers people to explore new flavors, eat healthier, and enjoy the satisfaction of homemade food. A recipe isn't just about cooking—it's about sharing love through every bite.
+        </p>
+
+        <!-- Action buttons -->
+        <div class="flex justify-center space-x-4 mt-8">
+            <button onclick="window.location.href='create-dish.html'" 
+                    class="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-300 flex items-center">
+                <i class="fas fa-utensils mr-2"></i>
+                Make Your Own Dish
+            </button>
+            
+            <button onclick="window.location.href='find-dish.html'" 
+                    class="px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors duration-300 flex items-center">
+                <i class="fas fa-search mr-2"></i>
+                Find a New Dish
+            </button>
+
+            <button onclick="window.location.href='view-recipes.html'" 
+                    class="px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors duration-300 flex items-center">
+                <i class="fas fa-book-open mr-2"></i>
+                View My Recipes
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>

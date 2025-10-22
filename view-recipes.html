@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Recipes - The Recipe Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white p-8 rounded-xl shadow-2xl">
+            <h1 class="text-4xl font-bold text-gray-900 text-center mb-8">My Recipes</h1>
+
+            <!-- Search and Filter Section -->
+            <div class="mb-8">
+                <input type="text" 
+                    id="searchInput"
+                    placeholder="Search recipes..." 
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-8 hidden">
+                <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
+                <p class="mt-2 text-gray-600">Loading recipes...</p>
+            </div>
+
+            <!-- Recipes Container -->
+            <div id="recipesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Recipes will be dynamically added here -->
+            </div>
+
+            <!-- No Recipes Message -->
+            <div id="noRecipesMessage" class="text-center py-8 hidden">
+                <i class="fas fa-book text-4xl text-gray-400"></i>
+                <p class="mt-2 text-gray-600">No recipes found</p>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="mt-8 flex justify-center space-x-4">
+                <button onclick="window.location.href='about.html'" 
+                    class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Home
+                </button>
+                <button onclick="window.location.href='create-dish.html'" 
+                    class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-300">
+                    <i class="fas fa-plus mr-2"></i>Create New Recipe
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const recipesContainer = document.getElementById('recipesContainer');
+        const loadingState = document.getElementById('loadingState');
+        const noRecipesMessage = document.getElementById('noRecipesMessage');
+        const searchInput = document.getElementById('searchInput');
+
+        // Show loading state
+        function showLoading(show) {
+            loadingState.classList.toggle('hidden', !show);
+        }
+
+        // Show no recipes message
+        function showNoRecipes(show) {
+            noRecipesMessage.classList.toggle('hidden', !show);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Create recipe card HTML
+        function createRecipeCard(recipe) {
+            return `
+                <div class="recipe-card p-6 rounded-lg shadow-md">
+                    <div class="relative pb-2/3 mb-4">
+                        ${recipe.imageUrl 
+                            ? `<img src="${recipe.imageUrl}" alt="${recipe.name}" class="w-full h-48 object-cover rounded-lg">`
+                            : `<div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-utensils text-4xl text-gray-400"></i>
+                               </div>`
+                        }
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">${recipe.name}</h3>
+                    <p class="text-gray-600 mb-4">${recipe.description}</p>
+                    <div class="text-sm text-gray-500">
+                        <p><i class="fas fa-clock mr-2"></i>${recipe.cookingTime} minutes</p>
+                        <p><i class="fas fa-user-friends mr-2"></i>${recipe.servings} servings</p>
+                        <p><i class="fas fa-calendar-alt mr-2"></i>${formatDate(recipe.createdAt)}</p>
+                    </div>
+                    <button onclick="showRecipeDetails('${recipe._id}')" 
+                        class="mt-4 text-indigo-600 hover:text-indigo-800">
+                        <i class="fas fa-eye mr-1"></i>View Details
+                    </button>
+                </div>
+            `;
+        }
+
+        // Fetch and display recipes
+        async function fetchRecipes() {
+            showLoading(true);
+            try {
+                const response = await fetch('http://localhost:3000/api/recipes');
+                if (!response.ok) throw new Error('Failed to fetch recipes');
+                
+                const recipes = await response.json();
+                
+                if (recipes.length === 0) {
+                    showNoRecipes(true);
+                    recipesContainer.innerHTML = '';
+                } else {
+                    showNoRecipes(false);
+                    recipesContainer.innerHTML = recipes.map(recipe => createRecipeCard(recipe)).join('');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                recipesContainer.innerHTML = `
+                    <div class="col-span-full text-center text-red-600">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Failed to load recipes. Please try again later.
+                    </div>`;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const recipeCards = recipesContainer.children;
+            
+            Array.from(recipeCards).forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const isVisible = title.includes(searchTerm) || description.includes(searchTerm);
+                card.classList.toggle('hidden', !isVisible);
+            });
+        });
+
+        // Load recipes when page loads
+        fetchRecipes();
+    </script>
+</body>
+</html>
